@@ -17,6 +17,8 @@ import { IconUpload } from "@tabler/icons-react";
 import { setAPIKey } from "./api";
 import { getAPIKey } from "./api";
 import { useEffect } from "react";
+import { Kbd } from '@mantine/core';
+
 
 type UploadMapresModalProps = {
   opened: boolean;
@@ -123,45 +125,51 @@ export default function UploadMapresModal({
             </Button>
             </Group>
           <TextInput
-            label="Mapres Name"
+            label="Name"
             placeholder="my_mapres"
             withAsterisk
             {...form.getInputProps("name")}
           />
           <TextInput
             label="Author"
-            placeholder="Anonymous"
+            placeholder="Unknown"
             {...form.getInputProps("author")}
           />
           <TagsInput
             label="Tags"
-            description="Comma-separated tags"
-            placeholder="fun,tileset,generated"
+            description="Press Enter to add"
+            placeholder="unhookable, quad, tileset, etc."
             {...form.getInputProps("tags")}
           />
 
           <FileInput
-            label="Main PNG"
-            placeholder="Select main .png"
+            label="Mapres (.png)"
+            placeholder="Upload file"
+            clearable
             accept="image/png"
             withAsterisk
-            leftSection={<IconUpload size={rem(16)} />}
+            leftSection={<IconUpload size={20} />}
+            leftSectionPointerEvents="none"
             {...form.getInputProps("main")}
           />
 
           <FileInput
-            label="Rules file (.rules)"
-            placeholder="Optional"
+            label="Autorules (.rules file)"
+            placeholder="Upload file (optional)"
+            clearable
             accept=".rules"
-            leftSection={<IconUpload size={rem(16)} />}
+            leftSection={<IconUpload size={20} />}
+            leftSectionPointerEvents="none"
             {...form.getInputProps("rules")}
           />
 
           <FileInput
-            label="Example PNG"
-            placeholder="Optional"
+            label="Example Image (.png)"
+            placeholder="Upload file (optional)"
+            clearable
             accept="image/png"
-            leftSection={<IconUpload size={rem(16)} />}
+            leftSection={<IconUpload size={20} />}
+            leftSectionPointerEvents="none"
             {...form.getInputProps("example")}
           />
 

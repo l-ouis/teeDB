@@ -81,11 +81,27 @@ export default function TagSearcher({
                   setSearch(event.currentTarget.value);
                 }}
                 onKeyDown={(event) => {
-                  if (
-                    event.key === "Backspace" &&
-                    search.length === 0 &&
-                    value.length > 0
-                  ) {
+                  if (event.key === 'Enter') {
+                    event.preventDefault();
+                    const match = data.find((tag) =>
+                      tag.toLowerCase() === search.trim().toLowerCase()
+                    );
+                    if (match && !value.includes(match)) {
+                      handleValueSelect(match);
+                      setSearch('');
+                    }
+                  }
+                  if (event.key === 'Tab') {
+                    const filtered = data.filter((item) =>
+                      item.toLowerCase().includes(search.trim().toLowerCase())
+                    );
+                    if (filtered.length > 0) {
+                      event.preventDefault();
+                      setSearch(filtered[0]);
+                    }
+                  }
+
+                  if (event.key === 'Backspace' && search.length === 0 && value.length > 0) {
                     event.preventDefault();
                     handleValueRemove(value[value.length - 1]);
                   }

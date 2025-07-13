@@ -4,6 +4,28 @@ export function getImageURL(name: string): string {
     return `${API_BASE_URL}/mapres/image/${encodeURIComponent(name)}`;
 }
 
+export function getExampleURL(name: string): string {
+    return `${API_BASE_URL}/mapres/example/${encodeURIComponent(name)}`;
+}
+
+export function getRulesURL(name: string): string {
+    return `${API_BASE_URL}/mapres/rules/${encodeURIComponent(name)}`;
+}
+
+export async function checkAuth(key: string): Promise<boolean> {
+    const res = await fetch(`${API_BASE_URL}/check_auth?key=${encodeURIComponent(key)}`);
+    return res.status === 200;
+}
+
+export async function deleteMapres(name: string, key: string): Promise<void> {
+    const res = await fetch(`${API_BASE_URL}/delete/${encodeURIComponent(name)}?key=${encodeURIComponent(key)}`, {
+        method: "DELETE",
+    });
+    if (!res.ok) {
+        throw new Error("Failed to delete mapres");
+    }
+}
+
 export async function getMapres(): Promise<any> {
     const cacheKey = "mapres_cache";
     const cacheExpiryKey = "mapres_cache_expiry";

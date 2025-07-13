@@ -12,9 +12,12 @@ from io import BytesIO
 
 app = Flask(__name__)
 CORS(app, resources={r"/mapres/image/*": {"origins": "*"}})
+CORS(app, resources={r"/mapres/rules/*": {"origins": "*"}})
+CORS(app, resources={r"/mapres/example/*": {"origins": "*"}})
 CORS(app, resources={r"/mapres": {"origins": "*"}})
 CORS(app, resources={r"/upload": {"origins": "*"}})
-CORS(app, resources={r"/delete": {"origins": "*"}})
+CORS(app, resources={r"/delete/*": {"origins": "*"}})
+CORS(app, resources={r"/check_auth": {"origins": "*"}})
 UPLOAD_DIR = 'uploads'
 fs = FileSystemDB(UPLOAD_DIR)
 
@@ -111,7 +114,7 @@ def delete_mapres(mapres_name):
     if not key or key != PASSWORD:
         return jsonify({"error": "No access"}), 403
 
-    fs.delete_mapres(mapres_name, key)
+    fs.delete_mapres(mapres_name)
     return jsonify({"status": "deleted", "mapres_name": mapres_name}), 200
 
 @app.route("/mapres", methods=["GET"])
@@ -129,12 +132,26 @@ def get_mapres_image(mapres_name):
         return jsonify({"error": "Mapres image not found"}), 404
     return send_file(image_path, mimetype="image/png", download_name=f"{mapres_name}.png")
 
+@app.route("/mapres/example/<string:mapres_name>", methods=["GET"])
+def get_mapres_example(mapres_name):
+    image_path = os.path.join(UPLOAD_DIR, mapres_name, f"{mapres_name}_example.png")
+    if not os.path.isfile(image_path):
+        return jsonify({"error": "Mapres example image not found"}), 404
+    return send_file(image_path, mimetype="image/png", download_name=f"{mapres_name}_example.png")
+
 @app.route("/mapres/rules/<string:mapres_name>", methods=["GET"])
 def get_mapres_rules(mapres_name):
     rules_path = os.path.join(UPLOAD_DIR, mapres_name, f"{mapres_name}.rules")
     if not os.path.isfile(rules_path):
         return jsonify({"error": "Mapres rules not found"}), 404
     return send_file(rules_path, mimetype="text/plain", download_name=f"{mapres_name}.rules")
+
+@app.route("/check_auth", methods=["GET"])
+def check_auth():
+    key = request.args.get("key")
+    if not key or key != PASSWORD:
+        return jsonify({"error": "No access"}), 403
+    return jsonify({"status": "authorized"}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
