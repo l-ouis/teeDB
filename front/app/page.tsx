@@ -45,7 +45,7 @@ export default function Page() {
 
   return (
     <Container size="xl" py="md">
-      <Title height={60}>
+      <Title>
           teeDB
       </Title>
       <Text>
