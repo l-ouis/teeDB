@@ -47,6 +47,7 @@ export default function UploadMapresModal({
       main: null as File | null,
       rules: null as File | null,
       example: null as File | null,
+      variants: [] as (File | null)[],
     },
 
     validate: {
@@ -85,6 +86,16 @@ export default function UploadMapresModal({
         formData.append(`${values.name}_example.png`, renamedExample);
     }
 
+    // Handle variant files
+    values.variants.forEach((variant, index) => {
+        if (variant) {
+            const renamedVariant = new File([variant], `${values.name}_variant_${index + 1}.png`, {
+                type: variant.type,
+            });
+            formData.append(`${values.name}_variant_${index + 1}.png`, renamedVariant);
+        }
+    });
+
     try {
     const res = await fetch(`http://localhost:5000/upload?key=${encodeURIComponent(key || "")}`, {
       method: "POST",
@@ -96,6 +107,7 @@ export default function UploadMapresModal({
       if (!res.ok) throw new Error(result.error || "Upload failed");
       onSuccess?.();
       form.reset();
+      form.setFieldValue('variants', []); // Ensure variants are properly reset
       onClose();
     } catch (e: any) {
       setError(e.message);
@@ -173,10 +185,66 @@ export default function UploadMapresModal({
             {...form.getInputProps("example")}
           />
 
+          <Text size="sm" fw={500} mt="md">Variant Images (optional)</Text>
+          <Text size="xs" c="dimmed" mb="xs">Upload different color schemes or variations of your mapres</Text>
+          
+          {form.values.variants.map((variant, index) => (
+            <FileInput
+              key={index}
+              label={`Variant ${index + 1} (.png)`}
+              placeholder="Upload variant file (optional)"
+              clearable
+              accept="image/png"
+              leftSection={<IconUpload size={20} />}
+              leftSectionPointerEvents="none"
+              value={variant}
+              onChange={(file) => {
+                const newVariants = [...form.values.variants];
+                newVariants[index] = file;
+                
+                // If this is the last input and a file was selected, add a new empty slot
+                if (index === newVariants.length - 1 && file) {
+                  newVariants.push(null);
+                }
+                
+                // If a file was cleared and there are empty slots at the end, remove them (except keep one empty)
+                if (!file) {
+                  while (newVariants.length > 1 && !newVariants[newVariants.length - 1] && !newVariants[newVariants.length - 2]) {
+                    newVariants.pop();
+                  }
+                }
+                
+                form.setFieldValue('variants', newVariants);
+              }}
+            />
+          ))}
+          
+          {/* Always show at least one empty variant input if none exist */}
+          {form.values.variants.length === 0 && (
+            <FileInput
+              label="Variant 1 (.png)"
+              placeholder="Upload variant file (optional)"
+              clearable
+              accept="image/png"
+              leftSection={<IconUpload size={20} />}
+              leftSectionPointerEvents="none"
+              value={null}
+              onChange={(file) => {
+                if (file) {
+                  form.setFieldValue('variants', [file, null]);
+                }
+              }}
+            />
+          )}
+
           {error && <Text c="red">{error}</Text>}
 
           <Group justify="flex-end" mt="md">
-            <Button variant="default" onClick={onClose}>
+            <Button variant="default" onClick={() => {
+              form.reset();
+              form.setFieldValue('variants', []);
+              onClose();
+            }}>
               Cancel
             </Button>
             <Button type="submit" loading={loading}>

@@ -5,5 +5,6 @@ export interface Mapres {
     example_path?: string;
     author: string;
     tags: string[];
+    variant_paths?: string[];
     last_modified?: any;
 }

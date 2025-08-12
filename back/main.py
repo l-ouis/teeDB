@@ -12,6 +12,7 @@ from io import BytesIO
 
 app = Flask(__name__)
 CORS(app, resources={r"/mapres/image/*": {"origins": "*"}})
+CORS(app, resources={r"/mapres/variant/*": {"origins": "*"}})
 CORS(app, resources={r"/mapres/rules/*": {"origins": "*"}})
 CORS(app, resources={r"/mapres/example/*": {"origins": "*"}})
 CORS(app, resources={r"/mapres": {"origins": "*"}})
@@ -57,6 +58,22 @@ def handle_upload(req):
     if example_file and not allowed_file(example_file.filename, ALLOWED_IMAGE_EXT):
         return {"error": f"File '{example_key}' must be a .png"}, 400
 
+    # Handle variant files
+    variants = []
+    variant_index = 1
+    while True:
+        variant_key = f"{name}_variant_{variant_index}.png"
+        variant_file = req.files.get(variant_key)
+        if not variant_file:
+            break
+        if not allowed_file(variant_file.filename, ALLOWED_IMAGE_EXT):
+            return {"error": f"Variant file '{variant_key}' must be a .png"}, 400
+        variants.append({
+            "filename": secure_filename(variant_file.filename),
+            "content": variant_file.read()
+        })
+        variant_index += 1
+
     result = {
         "name": name,
         "main": {
@@ -65,6 +82,7 @@ def handle_upload(req):
         },
         "rules": None,
         "example": None,
+        "variants": variants if variants else None,
         "author": author if author else "Unknown",
         "tags": tags if tags else []
     }
@@ -76,10 +94,10 @@ def handle_upload(req):
         }
 
     if example_file:
-        result["example"] = [{
+        result["example"] = {
             "filename": secure_filename(example_file.filename),
             "content": example_file.read()
-        }]
+        }
 
     return result, 200
 
@@ -97,14 +115,21 @@ def upload():
     print("Main file size:", len(files["main"]["content"]))
     if files["rules"]:
         print("Rules file size:", len(files["rules"]["content"]))
+    if files["variants"]:
+        print("Variant files:", len(files["variants"]))
 
     fs.create_mapres(files)
 
-    return jsonify({
+    response = {
         "status": "received",
         "main_filename": files["main"]["filename"],
         "rules_filename": files["rules"]["filename"] if files["rules"] else None
-    }), 200
+    }
+    
+    if files["variants"]:
+        response["variant_count"] = len(files["variants"])
+
+    return jsonify(response), 200
 
 @app.route("/delete/<string:mapres_name>", methods=["DELETE"])
 def delete_mapres(mapres_name):
@@ -131,6 +156,14 @@ def get_mapres_image(mapres_name):
     if not os.path.isfile(image_path):
         return jsonify({"error": "Mapres image not found"}), 404
     return send_file(image_path, mimetype="image/png", download_name=f"{mapres_name}.png")
+
+@app.route("/mapres/variant/<string:mapres_name>/<int:variant_index>", methods=["GET"])
+def get_mapres_variant(mapres_name, variant_index):
+    variant_filename = f"{mapres_name}_variant_{variant_index}.png"
+    variant_path = os.path.join(UPLOAD_DIR, mapres_name, variant_filename)
+    if not os.path.isfile(variant_path):
+        return jsonify({"error": "Mapres variant not found"}), 404
+    return send_file(variant_path, mimetype="image/png", download_name=variant_filename)
 
 @app.route("/mapres/example/<string:mapres_name>", methods=["GET"])
 def get_mapres_example(mapres_name):

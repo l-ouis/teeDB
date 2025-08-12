@@ -12,6 +12,10 @@ export function getRulesURL(name: string): string {
     return `${API_BASE_URL}/mapres/rules/${encodeURIComponent(name)}`;
 }
 
+export function getVariantURL(name: string, variantIndex: number): string {
+    return `${API_BASE_URL}/mapres/variant/${encodeURIComponent(name)}/${variantIndex}`;
+}
+
 export async function checkAuth(key: string): Promise<boolean> {
     const res = await fetch(`${API_BASE_URL}/check_auth?key=${encodeURIComponent(key)}`);
     return res.status === 200;

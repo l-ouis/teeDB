@@ -23,6 +23,7 @@ export default function Page() {
   const [mapresOpened, { open: openMapres, close: closeMapres }] = useDisclosure(false);
   const [tags, setTags] = useState<string[]>([]);
   const [selectedMapres, setSelectedMapres] = useState<Mapres | null>(null);
+  const [backgroundImage, setBackgroundImage] = useState<string>('grey_checkerboard');
 
 
   // fetch available tags on mount
@@ -71,24 +72,74 @@ export default function Page() {
           setSelectedMapres(null);
         }}
         mapres={selectedMapres}
+        backgroundImage={backgroundImage}
       />
 
-      <Stack spacing="md" mt="md">
+      <Stack gap="md" mt="md">
         
-        <TagSearcher
-          data={availableTags}
-          value={tags}
-          onChange={setTags}
-          placeholder="Search for tags... (e.g. unhookable, quad, tileset, etc.)"
-        />
+        <Group justify="space-between" align="center">
+          <div style={{ flex: 1, marginRight: '16px' }}>
+            <TagSearcher
+              data={availableTags}
+              value={tags}
+              onChange={setTags}
+              placeholder="Search for tags... (e.g. unhookable, quad, tileset, etc.)"
+            />
+          </div>
+          
+          <Group gap="xs">
+            <Text size="sm" fw={500}></Text>
+            <Button
+              size="xs"
+              variant="filled"
+              onClick={() => setBackgroundImage('white_checkerboard')}
+              style={{
+                backgroundColor: 'white',
+                color: 'black',
+                border: backgroundImage === 'white_checkerboard' ? '3px solid orange' : '2px solid black',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                padding: 0,
+                minWidth: '32px'
+              }}
+            />
+            <Button
+              size="xs"
+              variant="filled"
+              onClick={() => setBackgroundImage('grey_checkerboard')}
+              style={{
+                backgroundColor: '#888',
+                color: 'white',
+                border: backgroundImage === 'grey_checkerboard' ? '3px solid orange' : '2px solid black',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                padding: 0,
+                minWidth: '32px'
+              }}
+            />
+            <Button
+              size="xs"
+              variant="filled"
+              onClick={() => setBackgroundImage('sky')}
+              style={{
+                backgroundColor: '#87CEEB',
+                color: 'white',
+                border: backgroundImage === 'sky' ? '3px solid orange' : '2px solid black',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                padding: 0,
+                minWidth: '32px'
+              }}
+            />
+          </Group>
+        </Group>
 
         <SimpleGrid
           cols={4}
           spacing="md"
-          breakpoints={[
-            { maxWidth: '62rem', cols: 2 },
-            { maxWidth: '36rem', cols: 1 },
-          ]}
         >
           {mapresList
             .filter((mapres) =>
@@ -110,13 +161,10 @@ export default function Page() {
                   cursor: 'pointer',
                   aspectRatio: '1 / 1',
                   overflow: 'hidden',
-                  background: `
-                    linear-gradient(45deg, #eee 25%, transparent 25%),
-                    linear-gradient(-45deg, #eee 25%, transparent 25%),
-                    linear-gradient(45deg, transparent 75%, #eee 75%),
-                    linear-gradient(-45deg, transparent 75%, #eee 75%)`,
-                  backgroundSize: '32px 32px',
-                  backgroundPosition: '0 0, 0 16px, 16px -16px, -16px 0px',
+                  backgroundImage: `url(/bgs/${backgroundImage}.png)`,
+                  backgroundSize: 'contain',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'center',
                 }}
               >
                 <img

@@ -25,6 +25,17 @@ class FileSystemDB:
             return
         mapres_dir = os.path.join(self.root_name, mapres_name)
         os.makedirs(mapres_dir, exist_ok=True)
+        
+        # Handle variant paths
+        variant_paths = []
+        if files.get("variants"):
+            for i, variant in enumerate(files["variants"]):
+                variant_filename = f"{mapres_name}_variant_{i+1}.png"
+                variant_path = os.path.join(mapres_dir, variant_filename)
+                variant_paths.append(variant_path)
+                with open(variant_path, "wb") as f:
+                    f.write(variant["content"])
+        
         mapres = Mapres(
             name=mapres_name,
             image_path=os.path.join(mapres_dir, files["main"]["filename"]),
@@ -32,6 +43,7 @@ class FileSystemDB:
             example_path=os.path.join(mapres_dir, files["example"]["filename"]) if files.get("example") else None,
             author=author,
             tags=tags,
+            variant_paths=variant_paths,
             last_modified=int(time.time())
         )
         self.mapres_dict[mapres_name] = mapres

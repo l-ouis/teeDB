@@ -14,7 +14,7 @@ import {
   Center,
   Pill,
 } from "@mantine/core";
-import { getImageURL, getExampleURL, getRulesURL, getAPIKey, checkAuth, deleteMapres } from "./api";
+import { getImageURL, getExampleURL, getRulesURL, getVariantURL, getAPIKey, checkAuth, deleteMapres } from "./api";
 import { Mapres } from "./mapres";
 import { IconDownload } from "@tabler/icons-react";
 
@@ -22,12 +22,14 @@ type MapresModalProps = {
   opened: boolean;
   onClose: () => void;
   mapres: Mapres | null;
+  backgroundImage?: string;
 };
 
 export default function MapresModal({
   opened,
   onClose,
   mapres,
+  backgroundImage = 'grey_checkerboard',
 }: MapresModalProps) {
   if (!mapres) return null;
 
@@ -37,6 +39,7 @@ export default function MapresModal({
 
   const hasExample = mapres.example_path;
   const hasRules = mapres.automapper_path;
+  const hasVariants = mapres.variant_paths && mapres.variant_paths.length > 0;
   const deleteEnabled = checkAuth(getAPIKey());
 
     const downloadFile = async (url: string, filename: string) => {
@@ -83,38 +86,42 @@ export default function MapresModal({
     >
       <Stack>
         <Group align="flex-start" grow wrap="nowrap">
-          <Box
-            style={{
-                flex: 1,
-                backgroundColor: '#fff',
-                backgroundImage: `
-                linear-gradient(45deg, #ccc 25%, transparent 25%), 
-                linear-gradient(-45deg, #ccc 25%, transparent 25%), 
-                linear-gradient(45deg, transparent 75%, #ccc 75%), 
-                linear-gradient(-45deg, transparent 75%, #ccc 75%)
-                `,
-                backgroundSize: '20px 20px',
-                backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px',
-                borderRadius: 6,
-            }}
-            >
-            <Image
-                src={imageURL}
-                alt="Main image"
-                radius="sm"
-                style={{ width: '100%', objectFit: 'contain', background: 'transparent' }}
-            />
-            </Box>
-
-
-          <Box style={{ flex: 1 }}>
-            {hasExample ? (
+          <Stack style={{ flex: 1 }}>
+            <Box
+              style={{
+                  backgroundImage: `url(/bgs/${backgroundImage}.png)`,
+                  backgroundSize: 'contain',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'center',
+                  borderRadius: 6,
+                  cursor: 'pointer'
+              }}
+              onClick={() => downloadFile(imageURL, `${mapres.name}.png`)}
+              >
               <Image
-                src={exampleURL}
-                alt="Example image"
-                radius="sm"
-                style={{ width: '100%', objectFit: 'contain' }}
+                  src={imageURL}
+                  alt="Main image"
+                  radius="sm"
+                  style={{ width: '100%', objectFit: 'contain', background: 'transparent' }}
               />
+            </Box>
+          </Stack>
+
+          <Stack style={{ flex: 1 }}>
+            {hasExample ? (
+              <Box
+                style={{
+                  cursor: 'pointer'
+                }}
+                onClick={() => downloadFile(exampleURL, `${mapres.name}_example.png`)}
+              >
+                <Image
+                  src={exampleURL}
+                  alt="Example image"
+                  radius="sm"
+                  style={{ width: '100%', objectFit: 'contain' }}
+                />
+              </Box>
             ) : (
               <Center h="100%" mih={300}>
                 <Text c="dimmed" ta="center">
@@ -122,14 +129,46 @@ export default function MapresModal({
                 </Text>
               </Center>
             )}
-          </Box>
+          </Stack>
         </Group>
+        <Stack gap="xs">
+          {hasVariants && (
+              <>
+                <Text size="sm" fw={500}>Variants</Text>
+                <Group gap="xs">
+                  {mapres.variant_paths?.map((_, index) => (
+                    <Box
+                      key={index}
+                      style={{
+                        backgroundImage: `url(/bgs/${backgroundImage}.png)`,
+                        backgroundSize: 'contain',
+                        backgroundRepeat: 'no-repeat',
+                        backgroundPosition: 'center',
+                        borderRadius: 4,
+                        cursor: 'pointer',
+                        height: '150px',
+                        display: 'inline-block'
+                      }}
+                      onClick={() => downloadFile(getVariantURL(mapres.name, index + 1), `${mapres.name}_variant_${index + 1}.png`)}
+                    >
+                      <Image
+                        src={getVariantURL(mapres.name, index + 1)}
+                        alt={`Variant ${index + 1}`}
+                        radius="sm"
+                        style={{ height: '150px', objectFit: 'contain', background: 'transparent' }}
+                      />
+                    </Box>
+                  ))}
+                </Group>
+              </>
+            )}
+        </Stack>
 
-        <Stack spacing="xs">
+        <Stack gap="xs">
         <Text size="sm">
             Tags:
         </Text>
-          <Group spacing="xs">
+          <Group gap="xs">
             {mapres.tags.map((tag) => (
               <Pill key={tag} size="md">
                 {tag}
