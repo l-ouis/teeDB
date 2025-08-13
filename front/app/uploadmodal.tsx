@@ -97,7 +97,7 @@ export default function UploadMapresModal({
     });
 
     try {
-    const res = await fetch(`http://localhost:5000/upload?key=${encodeURIComponent(key || "")}`, {
+    const res = await fetch(`https://db.teecore.org/api/upload?key=${encodeURIComponent(key || "")}`, {
       method: "POST",
       body: formData,
     });

@@ -198,14 +198,14 @@ export default function MapresModal({
                 </Button>
             )}
           <Button
-            onClick={() => downloadFile(imageURL, `${mapres.name}`)}
+            onClick={() => downloadFile(imageURL, `${mapres.name}.png`)}
             variant="filled"
             leftSection={<IconDownload size={16} />}
           >
             Image
           </Button>
           <Button
-            onClick={() => downloadFile(rulesURL, `${mapres.name}`)}
+            onClick={() => downloadFile(rulesURL, `${mapres.name}.rules`)}
             variant="outline"
             leftSection={<IconDownload size={16} />}
             disabled={!hasRules}
